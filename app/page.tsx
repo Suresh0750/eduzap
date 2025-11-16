@@ -2,6 +2,8 @@ import Image from "next/image";
 import Header from "@/components/Header";
 import RequestForm from "@/components/Request-form";
 import Footer from "@/components/Footer";
+import StatsWidget from "@/components/StatsWidget";
+import RequestFilters from "@/components/RequestFilters";
 
 
 
@@ -35,6 +37,10 @@ export default function Home() {
                 </p>
               </div>
             </div>
+
+            <StatsWidget />
+
+            <RequestFilters />
 
           </section>
         </div>
