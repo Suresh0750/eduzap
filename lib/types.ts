@@ -16,7 +16,7 @@ export interface RequestTableProps {
 }
 
 
-export interface Request {
+export interface IRequest {
   _id?: string;
   id?: string;
   name: string;
@@ -25,3 +25,4 @@ export interface Request {
   image?: string;
   timestamp: string;
 }
+
