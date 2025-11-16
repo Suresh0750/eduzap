@@ -4,6 +4,7 @@ import RequestForm from "@/components/Request-form";
 import Footer from "@/components/Footer";
 import StatsWidget from "@/components/StatsWidget";
 import RequestFilters from "@/components/RequestFilters";
+import RequestTable from "@/components/RequestTable";
 
 
 
@@ -42,6 +43,8 @@ export default function Home() {
 
             <RequestFilters />
 
+            <RequestTable />
+            
           </section>
         </div>
       </main>
