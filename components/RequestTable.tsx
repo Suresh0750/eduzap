@@ -24,8 +24,6 @@ export interface RequestTableProps {
   
 
   const RequestTable = ({
-    searchQuery = "",
-    sortOrder = "asc",
     currentPage = 1,
     totalCount = 0,
     itemsPerPage = 5,
@@ -88,34 +86,6 @@ export interface RequestTableProps {
         return Math.ceil(totalCount/itemsPerPage)
       },[totalCount,itemsPerPage])
       
-
-      // Pagination
-  // const totalPages = Math.ceil(displayRequests.length / itemsPerPage);
-  // const safeCurrentPage = Math.min(
-  //   Math.max(currentPage, 1),
-  //   totalPages || 1
-  // );
-
-  // useEffect(() => {
-  //   if (!onPageChange) {
-  //     return;
-  //   }
-
-  //   if (totalPages === 0 && currentPage !== 1) {
-  //     onPageChange(1);
-  //     return;
-  //   }
-
-  //   if (totalPages > 0) {
-  //     if (currentPage > totalPages) {
-  //       onPageChange(totalPages);
-  //     } else if (currentPage < 1) {
-  //       onPageChange(1);
-  //     }
-  //   }
-  // }, [currentPage, totalPages, onPageChange]);
-
- 
       
       if (isLoading) {
         return (

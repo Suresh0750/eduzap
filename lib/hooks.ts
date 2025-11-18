@@ -30,6 +30,12 @@ export function useRequests() {
     try {
       setIsLoading(true);
       const queryParams = new URLSearchParams();
+
+      console.log({
+        sortOrder,
+        currentPage,
+        totalCount
+      },"filters")
       
       if (searchQuery) {
         queryParams.append('search', searchQuery);
@@ -72,12 +78,12 @@ export function useRequests() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, sortOrder, currentPage, itemsPerPage]);
+  }, [searchQuery, sortOrder, itemsPerPage,currentPage]);
 
-  useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
 
+  useEffect(()=>{
+    fetchRequests?.()
+  },[fetchRequests])
 
   const mutate = useCallback(() => {
     fetchRequests();

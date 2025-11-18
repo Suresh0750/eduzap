@@ -33,6 +33,7 @@ export function PaginationControls({
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
+          className={currentPage === 1 ? "" : "cursor-pointer"}
         >
           <ChevronLeft className="w-4 h-4" />
           Previous
@@ -46,6 +47,7 @@ export function PaginationControls({
               <Button
                 key={i}
                 variant={page === currentPage ? 'default' : 'outline'}
+                className={page === currentPage ? '' : 'cursor-pointer'}
                 size="sm"
                 onClick={() => onPageChange(page)}
               >
@@ -60,6 +62,7 @@ export function PaginationControls({
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
+          className={currentPage === totalPages ? "" : "cursor-pointer"}
         >
           Next
           <ChevronRight className="w-4 h-4" />

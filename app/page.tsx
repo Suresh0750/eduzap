@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Header from "@/components/Header";
 import RequestForm from "@/components/Request-form";
 import Footer from "@/components/Footer";
@@ -23,15 +23,17 @@ export default function Home() {
     totalCount,
   } } = useRequests();
 
-  const handleSearchChange = (query: string) => {
+  const handleSearchChange = useCallback((query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-  };
-
-  const handleClearSearch = () => {
+  }, [setSearchQuery, setCurrentPage]);
+  
+  const handleClearSearch = useCallback(() => {
     setSearchQuery('');
     setCurrentPage(1);
-  };
+  }, [setSearchQuery, setCurrentPage]);
+  
+
 
 
 
