@@ -58,7 +58,7 @@ export default function Home() {
                   Advanced Features Active
                 </p>
                 <p className="text-muted-foreground mt-1">
-                  This dashboard includes LRU caching, real-time updates, search with debouncing, and request statistics.
+                  This dashboard includes, search with debouncing, and request statistics.
                 </p>
               </div>
             </div>

@@ -13,8 +13,8 @@ const Footer = ()=>(
           <p className="font-semibold text-foreground text-sm">Technology</p>
           <ul className="text-sm text-muted-foreground mt-2 space-y-1">
             <li>Next.js 16 + TypeScript</li>
-            <li>MongoDB + LRU Cache</li>
-            <li>Real-time Updates</li>
+            <li>MongoDB</li>
+            <li>Hashtable + Data Structure</li>
           </ul>
         </div>
         <div>
