@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -28,6 +28,7 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
   const [success, setSuccess] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const errorTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [formData, setFormData] = useState<RequestPayload>({
     name: '',
     phone: '',
@@ -72,6 +73,9 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
     if (!validationResult.success) {
       setErrors(mapZodErrors(validationResult.error.issues));
       setIsLoading(false);
+      errorTimerRef.current = setTimeout(()=>{
+        setErrors({})
+      },3000)
       return;
     }
    
@@ -131,6 +135,15 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
       setIsLoading(false);
     }
   };
+
+  useEffect(()=>{
+    return ()=>{
+      if(errorTimerRef.current){
+        clearTimeout(errorTimerRef.current)
+      }
+    }
+  },[])
+  
 
   return (
     <Card className="w-full max-w-md p-6 border-primary/20 backdrop-blur-sm">
