@@ -19,7 +19,8 @@ export default function Home() {
     setSearchQuery,
     sortOrder,
     setSortOrder,
-    itemsPerPage
+    itemsPerPage,
+    totalCount,
   } } = useRequests();
 
   const handleSearchChange = (query: string) => {
@@ -81,6 +82,7 @@ export default function Home() {
             isLoading = {isLoading}
             error = {error}
             onPageChange={setCurrentPage}
+            totalCount = {totalCount}
             />
             
           </section>

@@ -19,6 +19,7 @@ export function useRequests() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore,setHasMore] = useState<boolean>(false)
+  const [totalCount,setTotalCount] = useState<number>(0)
   const itemsPerPage = 5;
 
   const [requests, setRequests] = useState<IRequest[]>([]);
@@ -55,7 +56,8 @@ export function useRequests() {
       if (response.data.success) {
         console.log("data from backend", response);
         setRequests(response.data.data);
-        setHasMore(response.data?.meta?.hasMore || false)
+        setHasMore(response.data?.meta?.hasMore || false) 
+        setTotalCount(response.data?.meta?.totalCount || 0)
       }
       
       setError(null);
@@ -87,6 +89,8 @@ export function useRequests() {
     error,
     mutate,
     filters : {
+      totalCount,
+      hasMore,
       currentPage,
       setCurrentPage,
       searchQuery,

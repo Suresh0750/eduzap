@@ -14,6 +14,7 @@ export interface RequestTableProps {
     sortOrder?: "asc" | "desc";
     currentPage?: number;
     itemsPerPage?: number;
+    totalCount ? : number;
     requests?: IRequest[];
     isLoading?: boolean;
     error?: string | Error | null;
@@ -26,6 +27,7 @@ export interface RequestTableProps {
     searchQuery = "",
     sortOrder = "asc",
     currentPage = 1,
+    totalCount = 0,
     itemsPerPage = 5,
     requests = [],
     isLoading = false,
@@ -80,39 +82,40 @@ export interface RequestTableProps {
           setDeletingId(null);
         }
       };    
+
+
+      const totalPages = useMemo(()=>{
+        return Math.ceil(totalCount/itemsPerPage)
+      },[totalCount,itemsPerPage])
       
 
       // Pagination
-  const totalPages = Math.ceil(displayRequests.length / itemsPerPage);
-  const safeCurrentPage = Math.min(
-    Math.max(currentPage, 1),
-    totalPages || 1
-  );
+  // const totalPages = Math.ceil(displayRequests.length / itemsPerPage);
+  // const safeCurrentPage = Math.min(
+  //   Math.max(currentPage, 1),
+  //   totalPages || 1
+  // );
 
-  useEffect(() => {
-    if (!onPageChange) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!onPageChange) {
+  //     return;
+  //   }
 
-    if (totalPages === 0 && currentPage !== 1) {
-      onPageChange(1);
-      return;
-    }
+  //   if (totalPages === 0 && currentPage !== 1) {
+  //     onPageChange(1);
+  //     return;
+  //   }
 
-    if (totalPages > 0) {
-      if (currentPage > totalPages) {
-        onPageChange(totalPages);
-      } else if (currentPage < 1) {
-        onPageChange(1);
-      }
-    }
-  }, [currentPage, totalPages, onPageChange]);
+  //   if (totalPages > 0) {
+  //     if (currentPage > totalPages) {
+  //       onPageChange(totalPages);
+  //     } else if (currentPage < 1) {
+  //       onPageChange(1);
+  //     }
+  //   }
+  // }, [currentPage, totalPages, onPageChange]);
 
-  const startIdx = (safeCurrentPage - 1) * itemsPerPage;
-  const paginatedRequests = displayRequests.slice(
-    startIdx,
-    startIdx + itemsPerPage
-  );
+ 
       
       if (isLoading) {
         return (
@@ -142,7 +145,7 @@ export interface RequestTableProps {
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
-            {paginatedRequests.map(request => (
+            {requests?.map(request => (
               <Card
                 key={request.id || request._id}
                 className={`p-4 border ${
@@ -187,7 +190,7 @@ export interface RequestTableProps {
                           <Trash2 className="w-4 h-4" />
                         )}
                       </Button>
-                    </div>
+                    </div>itemsPerPage
     
                     <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
                       <div>
@@ -211,7 +214,7 @@ export interface RequestTableProps {
     
           {displayRequests.length > 0 && (
             <PaginationControls
-              currentPage={safeCurrentPage}
+              currentPage={currentPage}
               totalPages={Math.max(totalPages, 1)}
               itemsPerPage={itemsPerPage}
               totalItems={displayRequests.length}

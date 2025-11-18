@@ -39,18 +39,17 @@ export function PaginationControls({
         </Button>
 
         <div className="flex items-center gap-1">
-          {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-            const pageNum = currentPage > 3 ? currentPage - 2 + i : i + 1;
-            if (pageNum > totalPages) return null;
-
+          {Array.from({ length: Math.max(1, totalPages) }).map((_, i) => {
+            
+            const page = i+1
             return (
               <Button
-                key={pageNum}
-                variant={pageNum === currentPage ? 'default' : 'outline'}
+                key={i}
+                variant={page === currentPage ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => onPageChange(pageNum)}
+                onClick={() => onPageChange(page)}
               >
-                {pageNum}
+                {page}
               </Button>
             );
           })}
