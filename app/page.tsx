@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import Header from "@/components/Header";
 import RequestForm from "@/components/Request-form";
 import Footer from "@/components/Footer";
@@ -63,8 +63,6 @@ export default function Home() {
                 </p>
               </div>
             </div>
-
-            <StatsWidget />
 
             <RequestFilters 
              onSearchChange={handleSearchChange}

@@ -18,25 +18,41 @@ export function useRequests() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore,setHasMore] = useState<boolean>(false)
-  const [totalCount,setTotalCount] = useState<number>(0)
+  const [hasMore, setHasMore] = useState<boolean>(false);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [cacheRequest, setCacheRequest] = useState<Record<string, IRequest[]>>({});
+  const [cacheCount, setCacheCount] = useState<Record<string, number>>({});
   const itemsPerPage = 5;
 
   const [requests, setRequests] = useState<IRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | AxiosError | string | null>(null);
 
+  const createKey = useCallback(
+    (search: string, sortOrder: string, page: number, limit: number) =>
+      `${search ?? ''}::${sortOrder ?? ''}::${page ?? 0}::${limit ?? 0}`,
+    [],
+  );
+
   const fetchRequests = useCallback(async () => {
+    const key = createKey(searchQuery, sortOrder, currentPage, itemsPerPage);
+    if (cacheRequest[key]) {
+      setRequests(cacheRequest[key]);
+      const cachedCount = cacheCount[key];
+      if (typeof cachedCount === 'number') {
+        setTotalCount(cachedCount);
+        setHasMore(currentPage * itemsPerPage < cachedCount);
+      } else {
+        setHasMore(false);
+      }
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
     try {
       setIsLoading(true);
       const queryParams = new URLSearchParams();
 
-      console.log({
-        sortOrder,
-        currentPage,
-        totalCount
-      },"filters")
-      
       if (searchQuery) {
         queryParams.append('search', searchQuery);
       }
@@ -64,6 +80,19 @@ export function useRequests() {
         setRequests(response.data.data);
         setHasMore(response.data?.meta?.hasMore || false) 
         setTotalCount(response.data?.meta?.totalCount || 0)
+       
+
+        // * cache the user request
+
+        setCacheRequest((prev)=>({
+          ...prev,
+          [key] : response.data.data
+        }))
+        setCacheCount((prev)=>({
+          ...prev,
+          [key] : response.data?.meta?.totalCount
+        }))
+
       }
       
       setError(null);
@@ -78,7 +107,7 @@ export function useRequests() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, sortOrder, itemsPerPage,currentPage]);
+  }, [searchQuery, sortOrder, itemsPerPage, currentPage, cacheRequest, cacheCount, createKey]);
 
 
   useEffect(()=>{
