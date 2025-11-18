@@ -74,7 +74,7 @@ export function useRequests() {
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [fetchRequests]);
 
 
   const mutate = useCallback(() => {

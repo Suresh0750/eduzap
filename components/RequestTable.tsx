@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState, } from 'react'
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Trash2, Loader2, Clock, Heart } from '@/components/Icons';
+import { Trash2, Loader2 } from '@/components/Icons';
 import Image from 'next/image';
-import { useRequests } from '@/lib/hooks';
 import { IRequest } from '@/lib/types';
+import { PaginationControls } from '@/components/pagination-controls';
 
 
 export interface RequestTableProps {
@@ -16,8 +16,9 @@ export interface RequestTableProps {
     itemsPerPage?: number;
     requests?: IRequest[];
     isLoading?: boolean;
-    error?: string | null;
+    error?: string | Error | null;
     mutate?: () => void | Promise<void>;
+    onPageChange?: (page: number) => void;
   }
   
 
@@ -30,37 +31,21 @@ export interface RequestTableProps {
     isLoading = false,
     error = null,
     mutate,
+    onPageChange,
   }: RequestTableProps) => {
   
 
     const [displayRequests, setDisplayRequests] = useState<IRequest[]>(requests);
     const [deletingId, setDeletingId] = useState<string | null>(null);
-    const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
 
-    const filteredRequests = useMemo(() => {
-        let filtered = [...requests];
-      
-        if (searchQuery) {
-          filtered = filtered.filter(req =>
-            req.title.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-        }
-      
-        filtered.sort((a, b) =>
-          sortOrder === "asc"
-            ? a.title.localeCompare(b.title)
-            : b.title.localeCompare(a.title)
-        );
-      
-        return filtered;
-      }, [requests, searchQuery, sortOrder]);
+   
 
 
       useEffect(()=>{
-          if(filteredRequests){
-            setDisplayRequests(filteredRequests)
+          if(requests){
+            setDisplayRequests(requests)
           }
-      },[filteredRequests])
+      },[requests])
 
       const isRecentRequest = (timestamp: string): boolean => {
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -89,6 +74,7 @@ export interface RequestTableProps {
             alert('Failed to delete request');
           }
         } catch (error) {
+          console.error('Error deleting request', error);
           alert('Error deleting request');
         } finally {
           setDeletingId(null);
@@ -98,7 +84,31 @@ export interface RequestTableProps {
 
       // Pagination
   const totalPages = Math.ceil(displayRequests.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
+  const safeCurrentPage = Math.min(
+    Math.max(currentPage, 1),
+    totalPages || 1
+  );
+
+  useEffect(() => {
+    if (!onPageChange) {
+      return;
+    }
+
+    if (totalPages === 0 && currentPage !== 1) {
+      onPageChange(1);
+      return;
+    }
+
+    if (totalPages > 0) {
+      if (currentPage > totalPages) {
+        onPageChange(totalPages);
+      } else if (currentPage < 1) {
+        onPageChange(1);
+      }
+    }
+  }, [currentPage, totalPages, onPageChange]);
+
+  const startIdx = (safeCurrentPage - 1) * itemsPerPage;
   const paginatedRequests = displayRequests.slice(
     startIdx,
     startIdx + itemsPerPage
@@ -143,9 +153,11 @@ export interface RequestTableProps {
               >
                 <div className="flex gap-4">
                   {request.image && (
-                    <img
+                    <Image
                       src={request.image || "/placeholder.svg"}
                       alt={request.title}
+                      width={80}
+                      height={80}
                       className="w-20 h-20 object-cover rounded-md flex-shrink-0"
                     />
                   )}
@@ -197,26 +209,14 @@ export interface RequestTableProps {
             ))}
           </div>
     
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
+          {displayRequests.length > 0 && (
+            <PaginationControls
+              currentPage={safeCurrentPage}
+              totalPages={Math.max(totalPages, 1)}
+              itemsPerPage={itemsPerPage}
+              totalItems={displayRequests.length}
+              onPageChange={(page) => onPageChange?.(page)}
+            />
           )}
         </div>
       );

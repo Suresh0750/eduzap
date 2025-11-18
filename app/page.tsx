@@ -1,6 +1,5 @@
 "use client"
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Header from "@/components/Header";
 import RequestForm from "@/components/Request-form";
 import Footer from "@/components/Footer";
@@ -8,18 +7,20 @@ import StatsWidget from "@/components/StatsWidget";
 import RequestFilters from "@/components/RequestFilters";
 import RequestTable from "@/components/RequestTable";
 import { useRequests } from "@/lib/hooks";
-import { IRequest } from "@/lib/types";
 
 
 
 export default function Home() {
 
-  const { requests, mutate ,isLoading ,error } = useRequests();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
+  const { requests, mutate ,isLoading ,error, filters : {
+    currentPage,
+    setCurrentPage,
+    searchQuery,
+    setSearchQuery,
+    sortOrder,
+    setSortOrder,
+    itemsPerPage
+  } } = useRequests();
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -79,6 +80,7 @@ export default function Home() {
             mutate = {mutate}
             isLoading = {isLoading}
             error = {error}
+            onPageChange={setCurrentPage}
             />
             
           </section>
