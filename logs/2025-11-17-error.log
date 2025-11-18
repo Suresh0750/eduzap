@@ -1,0 +1,18 @@
+2025-11-17 18:47:15 [error]: POST /api/requests error _Request.formData: Could not parse content as FormData.
+2025-11-17 18:47:15 [error]: [API Error]: _Request.formData: Could not parse content as FormData.
+2025-11-17 18:51:30 [error]: POST /api/requests error UserRequest validation failed: name: Path `name` is required., phone: Path `phone` is required., title: Path `title` is required.
+2025-11-17 18:51:30 [error]: [API Error]: UserRequest validation failed: name: Path `name` is required., phone: Path `phone` is required., title: Path `title` is required.
+2025-11-17 18:53:05 [error]: POST /api/requests error UserRequest validation failed: name: Path `name` is required., phone: Path `phone` is required., title: Path `title` is required.
+2025-11-17 18:53:05 [error]: [API Error]: UserRequest validation failed: name: Path `name` is required., phone: Path `phone` is required., title: Path `title` is required.
+2025-11-17 18:53:55 [error]: POST /api/requests error UserRequest validation failed: name: Path `name` is required., phone: Path `phone` is required., title: Path `title` is required.
+2025-11-17 18:53:55 [error]: [API Error]: UserRequest validation failed: name: Path `name` is required., phone: Path `phone` is required., title: Path `title` is required.
+2025-11-17 19:01:10 [error]: POST /api/requests error Cannot read properties of undefined (reading 'transfer-encoding')
+2025-11-17 19:01:10 [error]: [API Error]: Cannot read properties of undefined (reading 'transfer-encoding')
+2025-11-17 19:03:44 [error]: POST /api/requests error Cannot read properties of undefined (reading 'transfer-encoding')
+2025-11-17 19:03:44 [error]: [API Error]: Cannot read properties of undefined (reading 'transfer-encoding')
+2025-11-17 19:05:22 [error]: POST /api/requests error Cannot destructure property 'name' of 'apiReq.body' as it is undefined.
+2025-11-17 19:05:22 [error]: [API Error]: Cannot destructure property 'name' of 'apiReq.body' as it is undefined.
+2025-11-17 19:06:05 [error]: POST /api/requests error Operation `request.insertOne()` buffering timed out after 10000ms
+2025-11-17 19:06:05 [error]: [API Error]: Operation `request.insertOne()` buffering timed out after 10000ms
+2025-11-17 19:08:38 [error]: POST /api/requests error Operation `request.insertOne()` buffering timed out after 10000ms
+2025-11-17 19:08:38 [error]: [API Error]: Operation `request.insertOne()` buffering timed out after 10000ms

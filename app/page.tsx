@@ -1,3 +1,4 @@
+"use client"
 import Image from "next/image";
 import Header from "@/components/Header";
 import RequestForm from "@/components/Request-form";
@@ -5,10 +6,14 @@ import Footer from "@/components/Footer";
 import StatsWidget from "@/components/StatsWidget";
 import RequestFilters from "@/components/RequestFilters";
 import RequestTable from "@/components/RequestTable";
+import { useRequests } from "@/lib/hooks";
 
 
 
 export default function Home() {
+
+  const { requests, mutate } = useRequests();
+
   return (
    <div className="min-h-screen bg-background">
     <Header />
@@ -17,18 +22,15 @@ export default function Home() {
           
           <aside className="lg:col-span-1 space-y-6">
             <div className="lg:sticky lg:top-24">
-              <RequestForm />
+              <RequestForm onSuccess={mutate} />
               <div className="mt-6">
               
               </div>
             </div>
           </aside>
 
-          {/* Main Content - Dashboard & Table */}
           <section className="lg:col-span-3 space-y-6">
-            {/* Info Banner */}
             <div className="p-4 bg-accent/10 border border-accent/30 rounded-lg flex items-start gap-3">
-             
               <div className="text-sm">
                 <p className="font-medium text-foreground">
                   Advanced Features Active

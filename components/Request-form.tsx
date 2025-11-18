@@ -7,6 +7,15 @@ import { Card } from '@/components/ui/Card';
 import { Upload, AlertCircle, CheckCircle, Loader2 } from '@/components/Icons';
 import { FormErrors } from '@/lib/types';
 import Image from 'next/image';
+import {
+  mapZodErrors,
+  requestSchema,
+  type RequestPayload,
+} from '@/lib/validate';
+import axios from "axios";
+
+
+type ValidationDetail = { field: keyof FormErrors | string; message: string };
 
 interface RequestFormProps {
   onSuccess?: () => void;
@@ -19,16 +28,17 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
   const [success, setSuccess] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RequestPayload>({
     name: '',
     phone: '',
     title: '',
-    image: '',
+    image: undefined,
   });
+  const [file,setFile] = useState<File | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name="", value="" } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value.trim() }));
+    const { name = '', value = '' } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -49,14 +59,7 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
         return;
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setFormData(prev => ({ ...prev, image: result }));
-        setImagePreview(result);
-        setErrors(prev => ({ ...prev, image: undefined }));
-      };
-      reader.readAsDataURL(file);
+      setFile(file)
     }
   };
 
@@ -65,6 +68,68 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
     setIsLoading(true);
     setErrors({});
 
+    const validationResult = requestSchema.safeParse(formData);
+    if (!validationResult.success) {
+      setErrors(mapZodErrors(validationResult.error.issues));
+      setIsLoading(false);
+      return;
+    }
+   
+    const payload: RequestPayload = {
+      ...validationResult.data,
+    };
+
+    try {
+      const formData = new FormData();
+      for (const [key, value] of Object.entries(payload)) {
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      }
+
+      if(file){
+        formData.append("image",file)
+      }
+      // console.log('formData',formData)
+
+      console.log(`${process.env.NEXT_PUBLIC_SERVER} :  SERVER`)
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER}/requests`,
+        formData
+      );
+      
+      const data = response.data;
+
+      if (response.status >= 400) {
+        if (Array.isArray(data?.details)) { 
+          const fieldErrors: FormErrors = {};
+          (data.details as ValidationDetail[]).forEach(({ field, message }) => {
+            if (typeof field === 'string') {
+              fieldErrors[field as keyof FormErrors] = message;
+            }
+          });
+          setErrors(fieldErrors);
+        } else {
+          setErrors({ submit: data.error });
+        }
+        return;
+      }
+
+      setSuccess(true);
+      setFormData({ name: '', phone: '', title: '', image: undefined });
+      setImagePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      setTimeout(() => setSuccess(false), 3000);
+      onSuccess?.();
+    } catch (error) {
+      console.error('Failed to submit request', error);
+      setErrors({ submit: 'Failed to submit request. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -92,7 +157,7 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
             className={errors.name ? 'border-destructive focus:ring-destructive' : ''}
           />
           {errors.name && (
-            <p id="name-error" className="text-sm text-destructive mt-1 flex items-center gap-1">
+            <p id="name-error" className="text-sm text-destructive text-red-500 mt-1 flex items-center gap-1">
               <AlertCircle className="w-4 h-4" />
               {errors.name}
             </p>
@@ -117,7 +182,7 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
             className={errors.phone ? 'border-destructive focus:ring-destructive' : ''}
           />
           {errors.phone && (
-            <p id="phone-error" className="text-sm text-destructive mt-1 flex items-center gap-1">
+            <p id="phone-error" className="text-sm text-destructive mt-1 text-red-500 flex items-center gap-1">
               <AlertCircle className="w-4 h-4" />
               {errors.phone}
             </p>
@@ -142,7 +207,7 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
             className={errors.title ? 'border-destructive focus:ring-destructive' : ''}
           />
           {errors.title && (
-            <p id="title-error" className="text-sm text-destructive mt-1 flex items-center gap-1">
+            <p id="title-error" className="text-sm text-red-500 text-destructive mt-1 flex items-center gap-1">
               <AlertCircle className="w-4 h-4" />
               {errors.title}
             </p>
@@ -170,6 +235,8 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
             <div className="mt-2 relative group">
               <Image
                 src={imagePreview || "/placeholder.svg"}
+                width={250}
+                height={250}
                 alt="Preview"
                 className="w-full max-h-32 object-cover rounded-md border border-primary/20"
               />
@@ -177,7 +244,7 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
                 type="button"
                 onClick={() => {
                   setImagePreview(null);
-                  setFormData(prev => ({ ...prev, image: '' }));
+                  setFormData(prev => ({ ...prev, image: undefined }));
                   if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                   }

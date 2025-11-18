@@ -1,16 +1,14 @@
-import mongoose, { Schema, Document } from "mongoose";
-
+import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IRequestByUser extends Document {
   name: string;
   phone: string;
   title: string;
-  image: string;            
+  image?: string;
   timestamp: Date;
 }
 
-
-const UserRequestSchema: Schema<IRequestByUser> = new Schema(
+const UserRequestSchema = new Schema<IRequestByUser>(
   {
     name: {
       type: String,
@@ -20,7 +18,7 @@ const UserRequestSchema: Schema<IRequestByUser> = new Schema(
     phone: {
       type: String,
       required: true,
-      match: /^[0-9]{10}$/, 
+      match: /^[0-9]{10}$/,
     },
     title: {
       type: String,
@@ -29,17 +27,19 @@ const UserRequestSchema: Schema<IRequestByUser> = new Schema(
     },
     image: {
       type: String,
-      required: true, 
+      required: false,
     },
     timestamp: {
       type: Date,
       required: true,
+      default: Date.now, 
     },
   },
   { timestamps: false }
 );
 
+const UserRequest: Model<IRequestByUser> =
+  mongoose.models.UserRequest ||
+  mongoose.model<IRequestByUser>("UserRequest", UserRequestSchema, "request");
 
-const UserRequest = mongoose.model('UserRequest', UserRequestSchema,"request");
-
-module.exports = UserRequest;
+export default UserRequest;
