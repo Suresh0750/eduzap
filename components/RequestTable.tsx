@@ -7,6 +7,7 @@ import { Trash2, Loader2 } from '@/components/Icons';
 import Image from 'next/image';
 import { IRequest } from '@/lib/types';
 import { PaginationControls } from '@/components/pagination-controls';
+import axios from 'axios';
 
 
 export interface RequestTableProps {
@@ -64,11 +65,12 @@ export interface RequestTableProps {
       const handleDelete = async (id: string) => {
         setDeletingId(id);
         try {
-          const response = await fetch(`/api/requests/${id}`, {
-            method: 'DELETE',
-          });
+          const response = await axios.delete<{
+            success: boolean,
+            data : IRequest
+          }>(`${process.env.NEXT_PUBLIC_SERVER}/requests/${id}`);
     
-          if (response.ok) {
+          if (response.data.success) {
             mutate?.();
           } else {
             alert('Failed to delete request');

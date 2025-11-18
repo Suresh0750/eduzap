@@ -3,7 +3,6 @@ import { useCallback } from "react";
 import Header from "@/components/Header";
 import RequestForm from "@/components/Request-form";
 import Footer from "@/components/Footer";
-import StatsWidget from "@/components/StatsWidget";
 import RequestFilters from "@/components/RequestFilters";
 import RequestTable from "@/components/RequestTable";
 import { useRequests } from "@/lib/hooks";

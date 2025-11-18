@@ -34,6 +34,12 @@ export function useRequests() {
     [],
   );
 
+
+  const clearCache = ()=>{
+    setCacheRequest({})
+    setCacheCount({})
+  }
+
   const fetchRequests = useCallback(async () => {
     const key = createKey(searchQuery, sortOrder, currentPage, itemsPerPage);
     if (cacheRequest[key]) {
@@ -115,6 +121,7 @@ export function useRequests() {
   },[fetchRequests])
 
   const mutate = useCallback(() => {
+    clearCache?.()
     fetchRequests();
   }, [fetchRequests]);
 
