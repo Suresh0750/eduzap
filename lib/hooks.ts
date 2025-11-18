@@ -5,8 +5,22 @@ import { IRequest } from './types';
 import axios, { AxiosError } from 'axios';
 
 
+export interface IMeta {
+  totalCount: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+
 
 export function useRequests() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore,setHasMore] = useState<boolean>(false)
+  const itemsPerPage = 5;
+
   const [requests, setRequests] = useState<IRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | AxiosError | string | null>(null);
@@ -14,17 +28,38 @@ export function useRequests() {
   const fetchRequests = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get<{ success: boolean; data: IRequest[] }>(
-        `${process.env.NEXT_PUBLIC_SERVER}/requests`,
-      );
-      if (response.data.success) {
-        console.log("data from backend",response)
-        setRequests(response.data.data);
+      const queryParams = new URLSearchParams();
+      
+      if (searchQuery) {
+        queryParams.append('search', searchQuery);
       }
-
+      if (sortOrder) {
+        queryParams.append('sortOrder', sortOrder);
+      }
+      if (currentPage) {
+        queryParams.append('page', currentPage.toString());
+      }
+      if (itemsPerPage) {
+        queryParams.append('limit', itemsPerPage.toString());
+      }
+      
+      const queryString = queryParams.toString();
+      const url = `${process.env.NEXT_PUBLIC_SERVER}/requests${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await axios.get<{
+        success: boolean;
+        data: IRequest[];
+        meta: IMeta;
+      }>(url);
+      
+      if (response.data.success) {
+        console.log("data from backend", response);
+        setRequests(response.data.data);
+        setHasMore(response.data?.meta?.hasMore || false)
+      }
       
       setError(null);
-    } catch (err: unknown) {
+    } catch (err: unknown) {  
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || err.message);
       } else if (err instanceof Error) {
@@ -35,19 +70,12 @@ export function useRequests() {
     } finally {
       setIsLoading(false);
     }
+  }, [searchQuery, sortOrder, currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    fetchRequests();
   }, []);
 
-  useEffect(()=>{
-    fetchRequests()
-  },[])
-
-  // useEffect(() => {
-  //   fetchRequests();
-  //   pollIntervalRef.current = setInterval(fetchRequests, 5000);
-  //   return () => {
-  //     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-  //   };
-  // }, [fetchRequests]);
 
   const mutate = useCallback(() => {
     fetchRequests();
@@ -58,6 +86,15 @@ export function useRequests() {
     isLoading,
     error,
     mutate,
+    filters : {
+      currentPage,
+      setCurrentPage,
+      searchQuery,
+      setSearchQuery,
+      sortOrder,
+      setSortOrder,
+      itemsPerPage
+    }
   };
   
 }
