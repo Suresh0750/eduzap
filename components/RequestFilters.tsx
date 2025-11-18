@@ -1,17 +1,37 @@
 'use client'
 import { Search, X, ArrowUpDown } from '@/components/Icons';
 import { Input } from './ui/Input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from './ui/Button';
+import { useDebounce } from '@/lib/hooks';
 
-const RequestFilters = ()=>{
+interface RequestFiltersProps {
+  onSearchChange: (query: string) => void;
+  onSortChange: (order: 'asc' | 'desc') => void;
+  onClearSearch: () => void;
+  currentSearch: string;
+  currentSort: 'asc' | 'desc';
+}
 
-    const [localSearch,setLocalSearch] = useState("")
+const RequestFilters = ({
+  onSearchChange,
+  onSortChange,
+  onClearSearch,
+  currentSearch,
+  currentSort,
+}: RequestFiltersProps)=> {
 
-    const handleClear = ()=>{
+  const [localSearch, setLocalSearch] = useState(currentSearch);
+  const debouncedSearch = useDebounce(localSearch, 300);
 
-    }
+  useEffect(() => {
+    onSearchChange(debouncedSearch);
+  }, [debouncedSearch, onSearchChange]);
 
+  const handleClear = () => {
+    setLocalSearch('');
+    onClearSearch();
+  };
     return (
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
           <div className="flex-1 relative">

@@ -1,5 +1,6 @@
 "use client"
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import RequestForm from "@/components/Request-form";
 import Footer from "@/components/Footer";
@@ -7,12 +8,30 @@ import StatsWidget from "@/components/StatsWidget";
 import RequestFilters from "@/components/RequestFilters";
 import RequestTable from "@/components/RequestTable";
 import { useRequests } from "@/lib/hooks";
+import { IRequest } from "@/lib/types";
 
 
 
 export default function Home() {
 
-  const { requests, mutate } = useRequests();
+  const { requests, mutate ,isLoading ,error } = useRequests();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setCurrentPage(1);
+  };
+
+
 
   return (
    <div className="min-h-screen bg-background">
@@ -43,9 +62,24 @@ export default function Home() {
 
             <StatsWidget />
 
-            <RequestFilters />
+            <RequestFilters 
+             onSearchChange={handleSearchChange}
+             onSortChange={setSortOrder}
+             onClearSearch={handleClearSearch}
+             currentSearch={searchQuery}
+             currentSort={sortOrder}
+             />
 
-            <RequestTable />
+            <RequestTable
+            searchQuery={searchQuery}
+            sortOrder={sortOrder}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            requests = {requests}
+            mutate = {mutate}
+            isLoading = {isLoading}
+            error = {error}
+            />
             
           </section>
         </div>

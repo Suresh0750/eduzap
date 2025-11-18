@@ -1,124 +1,225 @@
 'use client';
 
-import { useState, } from 'react'
+import { useEffect, useMemo, useState, } from 'react'
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Trash2, Loader2, Clock, Heart } from '@/components/Icons';
 import Image from 'next/image';
+import { useRequests } from '@/lib/hooks';
+import { IRequest } from '@/lib/types';
 
 
+export interface RequestTableProps {
+    searchQuery?: string;
+    sortOrder?: "asc" | "desc";
+    currentPage?: number;
+    itemsPerPage?: number;
+    requests?: IRequest[];
+    isLoading?: boolean;
+    error?: string | null;
+    mutate?: () => void | Promise<void>;
+  }
+  
 
-const RequestTable = ()=>{
+  const RequestTable = ({
+    searchQuery = "",
+    sortOrder = "asc",
+    currentPage = 1,
+    itemsPerPage = 5,
+    requests = [],
+    isLoading = false,
+    error = null,
+    mutate,
+  }: RequestTableProps) => {
+  
 
-    return (
+    const [displayRequests, setDisplayRequests] = useState<IRequest[]>(requests);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+
+    const filteredRequests = useMemo(() => {
+        let filtered = [...requests];
+      
+        if (searchQuery) {
+          filtered = filtered.filter(req =>
+            req.title.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        }
+      
+        filtered.sort((a, b) =>
+          sortOrder === "asc"
+            ? a.title.localeCompare(b.title)
+            : b.title.localeCompare(a.title)
+        );
+      
+        return filtered;
+      }, [requests, searchQuery, sortOrder]);
+
+
+      useEffect(()=>{
+          if(filteredRequests){
+            setDisplayRequests(filteredRequests)
+          }
+      },[filteredRequests])
+
+      const isRecentRequest = (timestamp: string): boolean => {
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        return new Date(timestamp) >= oneHourAgo;
+      };
+
+      const formatDate = (timestamp: string): string => {
+        const date = new Date(timestamp);
+        return date.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      };
+      const handleDelete = async (id: string) => {
+        setDeletingId(id);
+        try {
+          const response = await fetch(`/api/requests/${id}`, {
+            method: 'DELETE',
+          });
+    
+          if (response.ok) {
+            mutate?.();
+          } else {
+            alert('Failed to delete request');
+          }
+        } catch (error) {
+          alert('Error deleting request');
+        } finally {
+          setDeletingId(null);
+        }
+      };    
+      
+
+      // Pagination
+  const totalPages = Math.ceil(displayRequests.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const paginatedRequests = displayRequests.slice(
+    startIdx,
+    startIdx + itemsPerPage
+  );
+      
+      if (isLoading) {
+        return (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        );
+      }
+    
+      if (error) {
+        return (
+          <Card className="p-6 border-destructive/50 bg-destructive/10">
+            <p className="text-destructive font-semibold">Error loading requests</p>
+            <p className="text-destructive/80 text-sm mt-1">Please try again later</p>
+          </Card>
+        );
+      }
+    
+      if (displayRequests.length === 0) {
+        return (
+          <Card className="p-12 text-center border-primary/20">
+            <p className="text-muted-foreground text-lg">No requests found</p>
+          </Card>
+        );
+      }
+    
+      return (
         <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4">
-            {[].map((request, index) => (
-            <Card
-                key={index }
-                className={`p-4 border transition-all duration-300 hover:shadow-lg ${
-                false
-                    ? 'border-primary/40 bg-gradient-to-r from-primary/5 to-transparent dark:from-primary/10'
-                    : 'border-primary/20 hover:border-primary/40'
-                } animate-in fade-in slide-in-from-bottom-2`}
-                style={{ animationDelay: `${index * 50}ms` }}
-            >
+          <div className="grid grid-cols-1 gap-4">
+            {paginatedRequests.map(request => (
+              <Card
+                key={request.id || request._id}
+                className={`p-4 border ${
+                  isRecentRequest(request.timestamp)
+                    ? 'border-primary/40 bg-primary/5 dark:bg-primary/10'
+                    : 'border-primary/20'
+                } transition-all duration-300 hover:border-primary/60`}
+              >
                 <div className="flex gap-4">
-                {false && (
-                    <Image
-                    src={ "/placeholder.svg"}
-                    alt={"title"}
-                    className="w-20 h-20 object-cover rounded-lg flex-shrink-0 border border-primary/20"
+                  {request.image && (
+                    <img
+                      src={request.image || "/placeholder.svg"}
+                      alt={request.title}
+                      className="w-20 h-20 object-cover rounded-md flex-shrink-0"
                     />
-                )}
-
-                <div className="flex-1 min-w-0">
+                  )}
+    
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
+                      <div>
                         <h3 className="font-semibold text-foreground text-balance">
-                        <title></title>
+                          {request.title}
                         </h3>
-                        {false && (
-                        <span className="inline-flex items-center gap-1 mt-1 px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full">
-                            <Clock className="w-3 h-3" />
+                        {isRecentRequest(request.timestamp) && (
+                          <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded">
                             Recent
-                        </span>
+                          </span>
                         )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button
+                      </div>
+                      <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                        {}
-                        }
-                        className="text-muted-foreground hover:text-accent"
-                        >
-                        <Heart
-                            className={`w-4 h-4 `}
-                        />
-                        </Button>
-                        <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>{}}
-                        disabled={
-                            false
-                        }
+                        onClick={() => handleDelete(request.id || request._id || '')}
+                        disabled={deletingId === request.id || deletingId === request._id}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                        {false ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                      >
+                        {deletingId === request.id || deletingId === request._id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                            <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         )}
-                        </Button>
+                      </Button>
                     </div>
-                    </div>
-
+    
                     <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
-                    <div>
-                        <span className="text-muted-foreground text-xs">Name</span>
-                        <p className="font-medium text-foreground">name</p>
+                      <div>
+                        <span className="text-muted-foreground">Name:</span>
+                        <p className="font-medium text-foreground">{request.name}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Phone:</span>
+                        <p className="font-medium text-foreground">{request.phone}</p>
+                      </div>
                     </div>
-                    <div>
-                        <span className="text-muted-foreground text-xs">Phone</span>
-                        <p className="font-medium text-foreground">
-                        <a
-                            href={`tel:${"request.phone"}`}
-                            className="text-primary hover:underline"
-                        >
-                            {"phone"}
-                        </a>
-                        </p>
-                    </div>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    
+    
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {formatDate(request.timestamp)}
                     </p>
+                  </div>
                 </div>
-                </div>
-            </Card>
+              </Card>
             ))}
-        </div>
-
-        {3 > 1 && (
+          </div>
+    
+          {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
-            <Button variant="outline" size="sm" disabled={1 === 1}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+              >
                 Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-                Page {1} of {10}
-            </span>
-            <Button variant="outline" size="sm" disabled={10 === 10}>
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+              >
                 Next
-            </Button>
+              </Button>
             </div>
-        )}
+          )}
         </div>
-    );
+      );
 }
 
 export default RequestTable;
