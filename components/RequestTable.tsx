@@ -188,8 +188,6 @@ export interface RequestTableProps {
             <PaginationControls
               currentPage={currentPage}
               totalPages={Math.max(totalPages, 1)}
-              itemsPerPage={itemsPerPage}
-              totalItems={displayRequests.length}
               onPageChange={(page) => onPageChange?.(page)}
             />
           )}
