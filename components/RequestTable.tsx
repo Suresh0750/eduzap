@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { IRequest } from '@/lib/types';
 import { PaginationControls } from '@/components/pagination-controls';
 import axios from 'axios';
+import { toast } from "sonner";
 
 
 export interface RequestTableProps {
@@ -71,13 +72,13 @@ export interface RequestTableProps {
           }>(`${process.env.NEXT_PUBLIC_SERVER}/requests/${id}`);
     
           if (response.data.success) {
+            toast.success("Request successfully deleted")
             mutate?.();
           } else {
-            alert('Failed to delete request');
+            toast.error('Failed to delete request');
           }
         } catch (error) {
-          console.error('Error deleting request', error);
-          alert('Error deleting request');
+          toast.error('Error deleting request');
         } finally {
           setDeletingId(null);
         }

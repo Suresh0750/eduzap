@@ -13,6 +13,7 @@ import {
   type RequestPayload,
 } from '@/lib/validate';
 import axios from "axios";
+import { toast } from "sonner";
 
 
 type ValidationDetail = { field: keyof FormErrors | string; message: string };
@@ -94,9 +95,7 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
       if(file){
         formData.append("image",file)
       }
-      // console.log('formData',formData)
-
-      console.log(`${process.env.NEXT_PUBLIC_SERVER} :  SERVER`)
+ 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER}/requests`,
         formData
@@ -121,6 +120,7 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
 
       setSuccess(true);
       setFormData({ name: '', phone: '', title: '', image: undefined });
+      toast.success("Request submitted successfully!")
       setImagePreview(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -129,8 +129,8 @@ export function RequestForm({ onSuccess, isSubmitting = false }: RequestFormProp
       setTimeout(() => setSuccess(false), 3000);
       onSuccess?.();
     } catch (error) {
-      console.error('Failed to submit request', error);
       setErrors({ submit: 'Failed to submit request. Please try again.' });
+      toast.error("Failed to submit request. Please try again.")
     } finally {
       setIsLoading(false);
     }
