@@ -24,7 +24,7 @@ const RequestFilters = ({
   const debouncedSearch = useDebounce(localSearch, 300);
 
   useEffect(() => {
-    if(!debouncedSearch.trim()) return
+    if(!debouncedSearch.trim()&&debouncedSearch.length) return
     onSearchChange(debouncedSearch);
   }, [debouncedSearch, onSearchChange]);
 
