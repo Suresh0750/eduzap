@@ -128,15 +128,22 @@ export interface RequestTableProps {
                 } transition-all duration-300 hover:border-primary/60`}
               >
                 <div className="flex gap-4">
-                  {request.image && (
-                    <Image
-                      src={request.image || "/placeholder.svg"}
-                      alt={request.title}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 object-cover rounded-md flex-shrink-0"
-                    />
-                  )}
+                  
+                {request.image && (
+                  <Image
+                    src={
+                      request.image.includes("cloudinary") ||
+                      request.image.startsWith("https://")
+                        ? request.image
+                        : `${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_URL}/${request.image}`
+                    }
+                    alt={request.title}
+                    width={80}
+                    height={80}
+                    className="w-20 h-20 object-cover rounded-md flex-shrink-0"
+                  />
+                )}
+
     
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
